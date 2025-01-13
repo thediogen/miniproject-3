@@ -1,5 +1,7 @@
 import random
 
+from fastapi import Request
+
 from app.constants import ALL_SYMBOLS
 
 

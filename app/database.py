@@ -1,6 +1,7 @@
-from typing import AsyncIterator
+from typing import AsyncIterator, Annotated
 import contextlib
 
+from fastapi import Depends
 from sqlalchemy.ext.asyncio import (
     create_async_engine,
     async_sessionmaker,
@@ -69,13 +70,20 @@ session_manager = DatabaseSessionManager()
 
 
 async def check_database_connection():
+    '''
+    Check databse connection and log db connection status
+    '''
+
     async with session_manager.session() as session:
         try:
             await session.execute(select(1))
+            return '\ndatabase connected\n'
         except Exception as _:
-            print('\nWARNING: database is not connected\n')
+            return '\nWARNING: database is not connected\n'
 
 
 async def get_db_session():
     async with session_manager.session() as session:
         yield session
+
+

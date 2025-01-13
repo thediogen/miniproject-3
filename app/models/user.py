@@ -1,10 +1,12 @@
+import random
+
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from sqlalchemy import BigInteger, String, Enum
+from sqlalchemy import String, Enum
 
 from app.models.base import Base
-from app.schemas import UserSchema
-from app.api.dependencies.db import Session_DP
-from app.utils import hash_password, generate_token
+from app.schemas.user import UserSchema
+from app.api.dependencies import Session_DP
+from app.utils import generate_token, hash_password
 
 
 class User(Base):
@@ -14,7 +16,8 @@ class User(Base):
     role: Mapped[str] = mapped_column(Enum('admin', 'user', 'seller', name='user_roles'), default='user')
     token: Mapped[str] = mapped_column(unique=True)
 
-    orders: Mapped[list['Order']] = relationship('Order', back_populates='')
+    orders: Mapped[list['Order']] = relationship('Order', back_populates='user')
+    products: Mapped[list['Product']] = relationship('Product', back_populates='user', cascade='all, delete-orphan')
 
     @classmethod
     async def create(cls, session: Session_DP, form_data: UserSchema):

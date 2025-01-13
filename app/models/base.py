@@ -1,10 +1,10 @@
 import uuid
 
-from sqlalchemy import BigInteger, select, Uuid
+from sqlalchemy import select, Uuid
 from sqlalchemy.orm import DeclarativeBase, declared_attr, Mapped, mapped_column
 from sqlalchemy.ext.asyncio import AsyncAttrs
 
-from app.api.dependencies.db import Session_DP
+from app.api.dependencies import Session_DP
 
 
 class Base(AsyncAttrs, DeclarativeBase):
@@ -17,12 +17,8 @@ class Base(AsyncAttrs, DeclarativeBase):
     # Queries
 
     @classmethod
-    async def all(cls, session: Session_DP, column=None, value=None):
-        stmt = None
-        if column and value:
-            stmt = select(cls).where(column == value)
-        else:
-            stmt = select(cls)
+    async def all(cls, session: Session_DP):
+        stmt = select(cls)
         query = await session.execute(stmt)
         
         result = query.scalars().all()

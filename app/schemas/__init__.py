@@ -1,2 +1,2 @@
-from .user import UserAuthenticateForm, UserAuthorizeForm, UserSchema, UserResponseSchema
-from .product import ProductSchema, ProductResponseSchema, DBProductSchema
+from app.schemas.user import UserResponseSchema, UserSchema, UserAuthenticateForm
+from app.schemas.product import ProductresponseSchema, ProductSchema, DBProductSchema

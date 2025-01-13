@@ -17,14 +17,20 @@ class UserSchema(BaseModel):
     password: str
     role: Role = Role.USER
 
-class UserResponseSchema(UserSchema):
-    id: uuid.UUID
-    token: str
-    orders: List
 
-class UserAuthenticateForm(UserSchema):
-    ...
-
-class UserAuthorizeForm(BaseModel):
+class UserAuthenticateForm(BaseModel):
     email: EmailStr = Field(max_length=256)
     password: str
+
+
+class UserResponseSchema(BaseModel):
+    username: str = Field(max_length=128)
+    email: EmailStr = Field(max_length=256)
+    role: Role = Role.USER
+    orders: List
+
+    model_config = {
+        'from_attributes': True
+    }
+
+

@@ -14,7 +14,4 @@ DB_CONFIG: str = (
     )
 )
 
-SESSION_MIDDLEWARE_SECRET_KEY: str = os.getenv('SESSION_MIDDLEWARE_SECRET_KEY')
-
-
-# print(f'\n\n{DB_CONFIG}\n\n')
+SESSION_MIDDLEWARE_KEY: str = os.getenv('SESSION_MIDDLEWARE_KEY')

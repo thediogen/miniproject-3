@@ -1,14 +1,18 @@
-from app.schemas import UserResponseSchema
+from app.schemas import UserResponseSchema, ProductresponseSchema
 
 
-# RESPONSE_MODELS = {
-#     'User': UserResponseSchema
-# }
+# прив'язую ORM моделі до pydantic-response схем
+RESPONSE_MODELS = {
+    'User': UserResponseSchema,
+    'Product': ProductresponseSchema
+}
 
 
 def make_response(instance):
-    data = {key: value for key, value in instance.__dict__.items() if not key.startswith('_')}
+    '''
+    Приймає об\'єкт в ORM вигляді, перетворює його в ту форму, в якій має повертатись
+    '''
+    response_model = RESPONSE_MODELS[instance.__class__.__name__]
+    instance = response_model.model_validate(instance)
 
-    print(data)
-
-    return
+    return instance

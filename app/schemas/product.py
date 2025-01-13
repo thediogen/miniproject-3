@@ -5,20 +5,20 @@ from pydantic import BaseModel, Field
 
 class ProductSchema(BaseModel):
     '''
-    Such fields user should provide when creating new product
+    In such form user provide all the data to create new product
     '''
-
     title: str = Field(max_length=64)
-    price: int = Field(gt=0)
-
-
-class ProductResponseSchema(ProductSchema):
-    id: int
+    price: int
 
 
 class DBProductSchema(ProductSchema):
     '''
-    In such form database receive new product to create it.
+    In such form database receive new product data
     '''
-
     user_id: uuid.UUID
+
+
+class ProductresponseSchema(ProductSchema):
+    model_config = {
+        'from_attributes': True
+    }

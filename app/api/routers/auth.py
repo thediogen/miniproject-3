@@ -1,21 +1,43 @@
-from fastapi import Depends, status, HTTPException, Request
+from fastapi import APIRouter, Request, Depends, HTTPException, status, Form
 
-from app.schemas import UserAuthenticateForm, UserAuthorizeForm, UserResponseSchema
-from app.api.dependencies.db import Session_DP
 from app.models import User
-from app.utils import verify_password
+from app.api.dependencies import Session_DP
+from app.schemas import UserSchema, UserResponseSchema, UserAuthenticateForm
+from app.utils import make_response, verify_password
 
 
-async def authenticate(request: Request, 
-                       session: Session_DP, 
-                       form_data: UserAuthenticateForm = Depends()
-):
+auth_r = APIRouter(tags=['auth'])
+
+
+@auth_r.get('/get_user')
+async def get_user(request: Request, session: Session_DP):
     '''
-    This endpoint takes values provided by user and if it is valid creates new account
-    in database and add token into request.session .
-    If such user already exists raises HTTPException (401_UNAUTHORIZED).
+    this endpoint checks, is user authorised. If not raises HTTPException. If True - return user name (from database)
     '''
 
+    access_token = request.session.get('access_token')
+
+    print('CHECKING')
+
+    if not access_token:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail='You are not authenticated'
+        )
+    
+    user = await User.get(
+        session=session, 
+        column=User.token, 
+        value=access_token
+    )
+
+    print(user.username)
+
+    return user.username
+
+
+@auth_r.post('/registration', response_model=UserResponseSchema)
+async def registration(request: Request, session: Session_DP, form_data: UserSchema = Depends()):
     user = await User.get(session=session, column=User.email, value=form_data.email)
 
     if user:
@@ -26,51 +48,51 @@ async def authenticate(request: Request,
 
     user = await User.create(session=session, form_data=form_data)
 
-    request.session['access_token'] = user.token
+    user = make_response(user)
 
     return user
 
 
-async def authorize(request: Request,
-                    session: Session_DP,
-                    form_data: UserAuthorizeForm = Depends()
-):
-    '''
-    This endpoint takes values provided by user and if it is valid takes them
-    token and add id to request.session (LSS Do authorization)
-    If provided data is not valid raises HTTPException (401_UNAUTHORIZED)
-    '''
+@auth_r.post('/authenticate')
+async def authenticate(request: Request, session: Session_DP, form_data: str = Form(...)):
+
+    form_data = UserAuthenticateForm.model_validate_json(form_data)
+
+    print(form_data.email)
+    print(form_data.password)
 
     user = await User.get(session=session, column=User.email, value=form_data.email)
 
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail='Such user does not exists. Try to authenticate'
+            detail='User with such email does not exists'
         )
     
-    is_password_valid = verify_password(form_data.password, user.password)
+    verify_password(form_data.password, user.password)
 
-    if is_password_valid == False:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail='Password is incorrect'
-        )
-    
     request.session['access_token'] = user.token
-    
-    return user
+
+    print(user.token)
+
+    return {
+        'access_token': user.token
+    }
 
 
-async def log_out(request: Request):
+@auth_r.post('/log_out')
+async def log_out(request: Request, session: Session_DP):
     access_token = request.session.get('access_token')
 
     if not access_token:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail='You are not authorized'
+            detail='You are not authenticated'
         )
-
+    
     del request.session['access_token']
 
-    return 'log out'
+    return {
+        'status': 200,
+        'detail': 'logged out'
+    }
