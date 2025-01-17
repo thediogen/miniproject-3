@@ -1,11 +1,8 @@
-function Header() {
+import CreateProductForm from "./CreateProductForm"
+
+function Header(props) {
     return (
-        <header>
-          <h1>Hello, User!</h1>
-          <nav>
-            <a href="">Our Chat</a>
-          </nav>
-        </header>
+        <h1>Hello</h1>
       )
 }
 

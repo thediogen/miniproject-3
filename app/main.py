@@ -24,7 +24,7 @@ def get_app() -> FastAPI:
     app = FastAPI(title='Miniproject 3', lifespan=lifespan)
 
     app.add_middleware(SessionMiddleware, secret_key=SESSION_MIDDLEWARE_KEY, same_site='none')
-    app.add_middleware(CORSMiddleware, allow_origins=['http://localhost:5173'], allow_methods=['*'])
+    app.add_middleware(CORSMiddleware, allow_origins=['*'], allow_methods=['*'])
     
     app.include_router(auth_r)
     app.include_router(products_r)
